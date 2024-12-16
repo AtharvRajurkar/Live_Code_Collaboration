@@ -4,6 +4,7 @@ import { Editor } from "@monaco-editor/react";
 import { useParams } from "react-router-dom";
 import Terminal from "./terminal";
 
+
 const FetchFiles = () => {
   const { frameworkname, foldername } = useParams();
   const [files, setFiles] = useState([]);
@@ -114,6 +115,38 @@ const FetchFiles = () => {
       console.error("Error in deleting file", error);
     }
   };
+  //Running a file
+  const handleRunCode = async () => {
+    if (!code) {
+      alert("no code selected");
+      return;
+    }
+    // try {
+    //   const response = await axios.get("http://localhost:5000/file", {
+    //     params: { key: fileKey },
+    //   });
+    // }catch(error) {
+    //   document.querySelector(".Output").innerText =
+    //       "Error running file: " + error.message;
+    // }
+  //  fs.writeFile("../backend/text.cpp", code , (err) => { console.log("error creating temporary file.")})
+    // try {
+    //   const response = await axios.post(`http://localhost:5000/runFile`, {
+    //     filePath: fileKey,
+    //     language: editorLanguage,
+    //     folderName: foldername,
+    //   });
+    //   const { output } = response.data;
+    //   document.querySelector(".Output").innerText = output;
+    // } catch (error) {
+    //   console.error("Error running file:", error);
+    //   document.querySelector(".Output").innerText =
+    //     "Error running file: " + error.message;
+    // }
+    else{
+      const response = await axios.post(`http://localhost:5000/runFile`, code );
+    }
+  };
 
   return (
     <div className="frameworkEditor">
@@ -179,7 +212,7 @@ const FetchFiles = () => {
           </div>
         </div>
       </div>
-    
+
       <div className="editorTerminal">
         <div className="editor">
           <div className={saved == true ? "saved" : "unsaved"}>
@@ -193,16 +226,20 @@ const FetchFiles = () => {
             value={code}
             onChange={handleCodeChange}
           />
+          <button id="runBtn" onClick={handleRunCode}>
+            Run
+          </button>
           <button id="saveBtn" onClick={handleUpdateCode}>
             Save
           </button>
         </div>
-        <div className="terminal">
+        <div className="terminalOutput">
+          <div className="terminal">
             <Terminal />
+          </div>
+          <div className="Output"></div>
         </div>
       </div>
-      
-    
     </div>
   );
 };

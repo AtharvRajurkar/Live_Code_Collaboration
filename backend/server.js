@@ -1,4 +1,7 @@
 const express = require("express");
+const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const http = require("http");
 const os = require("os");
 const pty = require("node-pty-prebuilt-multiarch");
@@ -9,12 +12,26 @@ const s3Client = require("./storjClient");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+//const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"],
+    },
+  });
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
+//app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000/editor/cpp/Code1", // Replace with your frontend's URL
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  credentials: true // Allow cookies or authorization headers
+}));
+
+
 
 const BUCKET_NAME = "task2";
 const BASE_FOLDER = "base/";
@@ -22,10 +39,13 @@ const BASE_FOLDER = "base/";
 var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 var ptyProcess = pty.spawn(shell, [], {
   name: "xterm-color",
-  cols: 80,
+  cols: 120,
   rows: 30,
-  cwd: process.env.INIT_CWD,
+   cwd: process.env.INIT_CWD,
+    // cwd: "\backend",
   env: process.env,
+//   cwd: userDirectories[socket.id],
+//   env: { ...process.env, INIT_CWD: userDirectories[socket.id] },
 });
 
 
@@ -52,7 +72,86 @@ io.on("connection", (socket) => {
   socket.on("terminal:write", (data) => {
     ptyProcess.write(data);
   });
+
+// socket.on("terminal:write", async (data) => {
+//     const command = data.trim();
+//     const currentDir = userDirectories[socket.id];
+
+//     try {
+//       // Parse the command
+//       const [cmd, ...args] = command.split(" ");
+
+//       switch (cmd) {
+//         case "ls": // List files
+//           const listData = await s3Client
+//             .listObjectsV2({ Bucket: BUCKET_NAME, Prefix: `${currentDir}/` })
+//             .promise();
+//           const files = listData.Contents.map((file) => file.Key.replace(`${currentDir}/`, ""));
+//           ptyProcess.write(files.join("\n") + "\n");
+//           break;
+
+        // case "cd": // Change directory
+        //   if (args[0] === "..") {
+        //     const newDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
+        //     userDirectories[socket.id] = newDir || currentDir;
+        //   } else {
+        //     const newDir = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
+        //     const checkDir = await s3Client
+        //       .listObjectsV2({ Bucket: BUCKET_NAME, Prefix: `${newDir}/` })
+        //       .promise();
+        //     if (checkDir.Contents.length) {
+        //         userDirectories[socket.id] = newDir;
+        //     } else {
+        //       ptyProcess.write("Directory not found\n");
+        //     }
+        //   }
+        //   break;
+
+        // case "mkdir": // Create directory
+        //   const newFolder = `${currentDir}/${args[0]}/`.replace(/\/+/g, "/");
+        //   await s3Client
+        //     .putObject({ Bucket: BUCKET_NAME, Key: newFolder, Body: "" })
+        //     .promise();
+        //   ptyProcess.write(`Directory '${args[0]}' created\n`);
+        //   break;
+
+        // case "touch": // Create file
+        //   const newFile = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
+        //   await s3Client
+        //     .putObject({ Bucket: BUCKET_NAME, Key: newFile, Body: "" })
+        //     .promise();
+        //   ptyProcess.write(`File '${args[0]}' created\n`);
+        //   break;
+
+      //     case "rm": // Remove file or directory
+      //     const deleteKey = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
+      //     await s3Client
+      //       .deleteObject({ Bucket: BUCKET_NAME, Key: deleteKey })
+      //       .promise();
+      //     ptyProcess.write(`Deleted '${args[0]}'\n`);
+      //     break;
+
+      //   default:
+      //     ptyProcess.write(`Command not recognized: ${cmd}\n`);
+      // }
+  //   } catch (err) {
+  //     console.error("Command error:", err);
+  //     ptyProcess.write(`Error: ${err.message}\n`);
+  //   }
+  // });
+
+  // socket.on("disconnect", () => {
+  //   console.log("User disconnected:", socket.id);
+  //   delete userDirectories[socket.id];
+  // });
 });
+
+app.post("/runFile", async (req, res) => {
+ const { code } = req.body.Code;
+ fs.writeFile("./test.cpp", code , (err) => { console.log("file not created.", err); });
+});
+
+
 
 app.get("/", (req, res) => {
   res.send("Live Code Collaboration IDE!");
@@ -100,8 +199,9 @@ app.get("/folder/:name", async (req, res) => {
 });
 
 app.get("/file", async (req, res) => {
+  console.log("route hit");
   const { key } = req.query;
-
+  console.log(req);
   if (!key) {
     return res.status(400).json({ error: "File key is required." });
   }
