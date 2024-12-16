@@ -22,7 +22,7 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-//app.use(express.json());
+
 app.use(bodyParser.json());
 app.use(cors());
 app.use(cors({
@@ -73,77 +73,7 @@ io.on("connection", (socket) => {
     ptyProcess.write(data);
   });
 
-// socket.on("terminal:write", async (data) => {
-//     const command = data.trim();
-//     const currentDir = userDirectories[socket.id];
 
-//     try {
-//       // Parse the command
-//       const [cmd, ...args] = command.split(" ");
-
-//       switch (cmd) {
-//         case "ls": // List files
-//           const listData = await s3Client
-//             .listObjectsV2({ Bucket: BUCKET_NAME, Prefix: `${currentDir}/` })
-//             .promise();
-//           const files = listData.Contents.map((file) => file.Key.replace(`${currentDir}/`, ""));
-//           ptyProcess.write(files.join("\n") + "\n");
-//           break;
-
-        // case "cd": // Change directory
-        //   if (args[0] === "..") {
-        //     const newDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
-        //     userDirectories[socket.id] = newDir || currentDir;
-        //   } else {
-        //     const newDir = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
-        //     const checkDir = await s3Client
-        //       .listObjectsV2({ Bucket: BUCKET_NAME, Prefix: `${newDir}/` })
-        //       .promise();
-        //     if (checkDir.Contents.length) {
-        //         userDirectories[socket.id] = newDir;
-        //     } else {
-        //       ptyProcess.write("Directory not found\n");
-        //     }
-        //   }
-        //   break;
-
-        // case "mkdir": // Create directory
-        //   const newFolder = `${currentDir}/${args[0]}/`.replace(/\/+/g, "/");
-        //   await s3Client
-        //     .putObject({ Bucket: BUCKET_NAME, Key: newFolder, Body: "" })
-        //     .promise();
-        //   ptyProcess.write(`Directory '${args[0]}' created\n`);
-        //   break;
-
-        // case "touch": // Create file
-        //   const newFile = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
-        //   await s3Client
-        //     .putObject({ Bucket: BUCKET_NAME, Key: newFile, Body: "" })
-        //     .promise();
-        //   ptyProcess.write(`File '${args[0]}' created\n`);
-        //   break;
-
-      //     case "rm": // Remove file or directory
-      //     const deleteKey = `${currentDir}/${args[0]}`.replace(/\/+/g, "/");
-      //     await s3Client
-      //       .deleteObject({ Bucket: BUCKET_NAME, Key: deleteKey })
-      //       .promise();
-      //     ptyProcess.write(`Deleted '${args[0]}'\n`);
-      //     break;
-
-      //   default:
-      //     ptyProcess.write(`Command not recognized: ${cmd}\n`);
-      // }
-  //   } catch (err) {
-  //     console.error("Command error:", err);
-  //     ptyProcess.write(`Error: ${err.message}\n`);
-  //   }
-  // });
-
-  // socket.on("disconnect", () => {
-  //   console.log("User disconnected:", socket.id);
-  //   delete userDirectories[socket.id];
-  // });
 });
 
 app.post("/runFile", async (req, res) => {
