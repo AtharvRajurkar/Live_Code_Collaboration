@@ -54,7 +54,7 @@ const FetchFiles = () => {
       cpp: "cpp",
     };
     setEditorLanguage(languageMap[frameworkname] || "plaintext");
-  }, [frameworkname, deleted, newFileAdded, extensions, saved]);
+  }, [frameworkname, deleted, newFileAdded, extensions, saved,]);
 
   // Select file to open on editor
   const handleFileSelect = async (fileKey) => {
@@ -121,28 +121,6 @@ const FetchFiles = () => {
       alert("no code selected");
       return;
     }
-    // try {
-    //   const response = await axios.get("http://localhost:5000/file", {
-    //     params: { key: fileKey },
-    //   });
-    // }catch(error) {
-    //   document.querySelector(".Output").innerText =
-    //       "Error running file: " + error.message;
-    // }
-  //  fs.writeFile("../backend/text.cpp", code , (err) => { console.log("error creating temporary file.")})
-    // try {
-    //   const response = await axios.post(`http://localhost:5000/runFile`, {
-    //     filePath: fileKey,
-    //     language: editorLanguage,
-    //     folderName: foldername,
-    //   });
-    //   const { output } = response.data;
-    //   document.querySelector(".Output").innerText = output;
-    // } catch (error) {
-    //   console.error("Error running file:", error);
-    //   document.querySelector(".Output").innerText =
-    //     "Error running file: " + error.message;
-    // }
     else{
       const response = await axios.post(`http://localhost:5000/runFile`, code );
     }

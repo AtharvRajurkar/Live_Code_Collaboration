@@ -199,7 +199,6 @@ app.get("/folder/:name", async (req, res) => {
 });
 
 app.get("/file", async (req, res) => {
-  console.log("route hit");
   const { key } = req.query;
   console.log(req);
   if (!key) {
